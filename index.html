@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Performance Prediction | ML Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION BAR ===== -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <span class="nav-logo">&#127891; Student Performance Predictor</span>
+
+    </div>
+  </nav>
+
+  <!-- ===== HERO / HEADER ===== -->
+  <header class="hero">
+    <div class="container">
+      <h1>Student Performance Prediction Dashboard</h1>
+      <p class="hero-desc">
+        Enter your academic details below and get an <strong>estimated performance score</strong>
+        along with personalized improvement suggestions. This project demonstrates a simple
+        weighted prediction formula inspired by machine learning concepts.
+      </p>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="container main-grid">
+
+    <!-- ── LEFT: Input Form ── -->
+    <section class="card form-card" aria-label="Student Input Form">
+      <h2>&#128221; Enter Student Details</h2>
+
+      <form id="predictionForm" novalidate>
+        <!-- Attendance -->
+        <div class="form-group">
+          <label for="attendance">Attendance Percentage <span class="range-hint">(0 – 100)</span></label>
+          <input type="number" id="attendance" min="0" max="100" step="1" value="75" required />
+          <span class="error-msg" id="err-attendance"></span>
+        </div>
+
+        <!-- Study Hours -->
+        <div class="form-group">
+          <label for="studyHours">Daily Study Hours <span class="range-hint">(0 – 16)</span></label>
+          <input type="number" id="studyHours" min="0" max="16" step="0.5" value="4" required />
+          <span class="error-msg" id="err-studyHours"></span>
+        </div>
+
+        <!-- Previous Marks -->
+        <div class="form-group">
+          <label for="prevMarks">Previous Exam Marks <span class="range-hint">(0 – 100)</span></label>
+          <input type="number" id="prevMarks" min="0" max="100" step="1" value="65" required />
+          <span class="error-msg" id="err-prevMarks"></span>
+        </div>
+
+        <!-- Assignment Completion -->
+        <div class="form-group">
+          <label for="assignment">Assignment Completion <span class="range-hint">(0 – 100%)</span></label>
+          <input type="number" id="assignment" min="0" max="100" step="1" value="70" required />
+          <span class="error-msg" id="err-assignment"></span>
+        </div>
+
+        <!-- Sleep Hours -->
+        <div class="form-group">
+          <label for="sleepHours">Sleep Hours per Day <span class="range-hint">(0 – 16)</span></label>
+          <input type="number" id="sleepHours" min="0" max="16" step="0.5" value="7" required />
+          <span class="error-msg" id="err-sleepHours"></span>
+        </div>
+
+        <!-- Extracurricular -->
+        <div class="form-group">
+          <label for="extraHours">Extracurricular Activity Hours <span class="range-hint">(0 – 12)</span></label>
+          <input type="number" id="extraHours" min="0" max="12" step="0.5" value="2" required />
+          <span class="error-msg" id="err-extraHours"></span>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary" id="predictBtn">&#9889; Predict Performance</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">&#128260; Reset</button>
+          <button type="button" class="btn btn-outline" id="sampleBtn">&#128203; Sample Data</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── RIGHT: Results Panel ── -->
+    <section class="card results-card" id="resultsCard" aria-label="Prediction Results" style="display:none;">
+      <h2>&#127919; Prediction Results</h2>
+
+      <!-- Score Gauge -->
+      <div class="score-section">
+        <div class="score-circle" id="scoreCircle">
+          <span class="score-value" id="scoreValue">--</span>
+          <span class="score-label">/ 100</span>
+        </div>
+        <p class="category-badge" id="categoryBadge">--</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+
+      <!-- Chart -->
+      <div class="chart-wrapper">
+        <canvas id="comparisonChart"></canvas>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="suggestions" id="suggestionsBox">
+        <h3>&#128161; Personalized Suggestions</h3>
+        <ul id="suggestionsList"></ul>
+      </div>
+
+      <!-- Disclaimer -->
+      <p class="disclaimer">
+        &#9888;&#65039; <strong>Disclaimer:</strong> These predictions are estimates generated
+        by a simple weighted formula. They are <em>not</em> guaranteed exam results and should
+        not replace actual study or professional academic guidance.
+      </p>
+    </section>
+  </main>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="container how-section card" id="howItWorks">
+    <h2>&#9881;&#65039; How It Works</h2>
+    <p>
+      This tool uses a <strong>weighted regression-style formula</strong> to estimate student
+      performance. Each input factor is assigned a weight reflecting its assumed importance:
+    </p>
+    <table class="weights-table">
+      <thead>
+        <tr><th>Factor</th><th>Weight</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Previous Exam Marks</td><td>35%</td><td>Past performance is the strongest indicator</td></tr>
+        <tr><td>Attendance</td><td>20%</td><td>Regular class participation matters</td></tr>
+        <tr><td>Study Hours</td><td>20%</td><td>Converted to a 0–100 score (8 hrs = 100)</td></tr>
+        <tr><td>Assignment Completion</td><td>15%</td><td>Consistent assignment work helps learning</td></tr>
+        <tr><td>Sleep Hours</td><td>10%</td><td>Converted to a 0–100 score (8 hrs = 100)</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Extracurricular activity hours</strong> are not penalized in the score; instead,
+      they influence contextual suggestions (e.g., balancing time).
+    </p>
+    <p class="formula-box">
+      Predicted Marks = (0.35 &times; Previous Marks) + (0.20 &times; Attendance)
+      + (0.20 &times; Study Score) + (0.15 &times; Assignment) + (0.10 &times; Sleep Score)
+    </p>
+    <p class="note">
+      <strong>Note:</strong> This is an <em>illustrative educational formula</em>, not a
+      trained or scientifically validated machine learning model. It was not trained on real
+      student data and does not claim any particular accuracy.
+    </p>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <p>
+        &#127891; <strong>Student Performance Prediction</strong> &mdash; An educational
+        machine learning demonstration project.
+      </p>
+      <p class="footer-sub">&copy; 2026 &middot; College Mini-Project &middot; Built with HTML, CSS, JavaScript &amp; Chart.js</p>
+    </div>
+  </footer>
+
+  <!-- Main Script -->
+  <script src="script.js"></script>
+</body>
+</html>
